@@ -50,12 +50,23 @@ def create_fake_data():
         purchase_date = fake.date_time_between(start_date='-1y', end_date='now')
         bought_property = BoughtProperty(property=property, user=user, purchase_date=purchase_date)
         bought_properties.append(bought_property)
+
+     # Create ratings
+    ratings = []
+    for _ in range(10):
+        property = fake.random_element(elements=properties)
+        user = fake.random_element(elements=users)
+        rating = fake.random_int(min=1, max=5)
+        rating_entry = Rating(property=property, user=user, rating=rating)
+        ratings.append(rating_entry)
+
     # Add the objects to the database session
     db.session.add_all(users)
     db.session.add_all(admins)
     db.session.add_all(categories)
     db.session.add_all(properties)
     db.session.add_all(bought_properties)
+    db.session.add_all(ratings)
     # Commit the changes to the database
     db.session.commit()
 # Seed the data
