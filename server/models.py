@@ -50,8 +50,6 @@ class Property(db.Model, SerializerMixin):
     description = db.Column(db.String)
     price = db.Column(db.Integer)
     quantity = db.Column(db.Integer)
-    is_rental = db.Column(db.Boolean)
-    is_sold = db.Column(db.Boolean)
     category_id = db.Column(db.Integer, db.ForeignKey('property_categories.category_id'))
     admin_id = db.Column(db.Integer, db.ForeignKey('admins.admin_id'))
     admin = db.relationship('Admin', back_populates='properties')

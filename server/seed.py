@@ -46,12 +46,9 @@ def create_fake_data():
         description = fake.sentence()
         price = fake.random_int(min=10000, max=1000000)
         quantity = fake.random_int(min=100, max=1000)  # Include quantity attribute
-        is_rental = fake.boolean()
-        is_sold = fake.boolean()
         category = fake.random_element(elements=categories)
         admin = fake.random_element(elements=admins)
-        property = Property(title=title, description=description, price=price, quantity=quantity,
-                            is_rental=is_rental, is_sold=is_sold, category=category, admin=admin)
+        property = Property(title=title, description=description, price=price, quantity=quantity, category=category, admin=admin)
         properties.append(property)
 
     # Create bought properties
@@ -60,9 +57,9 @@ def create_fake_data():
         property = fake.random_element(elements=properties)
         user = fake.random_element(elements=users)
         purchase_date = fake.date_time_between(start_date='-1y', end_date='now')
-        total_price = fake.random_int(min=100, max=1000) 
+        total_cost = fake.random_int(min=100, max=1000) 
         bought_quantity = fake.random_int(min=100, max=1000)
-        bought_property = BoughtProperty(property=property, user=user, purchase_date=purchase_date, total_price=total_price, bought_quantity=bought_quantity)
+        bought_property = BoughtProperty(property=property, user=user, purchase_date=purchase_date, total_cost=total_cost, bought_quantity=bought_quantity)
         bought_properties.append(bought_property)
 
     # Create ratings
