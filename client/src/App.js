@@ -4,6 +4,7 @@ import LandingText from './landingtext';
 import CardComponent from './cartegorycard';
 import About from './about';
 
+import Home from './Home'; 
 
 function App() {
   return (
@@ -11,11 +12,9 @@ function App() {
       <Navbar />
       <LandingText />
       <div style={{ background: '#ccc', textAlign: 'center' }}>
-        <h1 >OUR PROPERTY CATALOGUE</h1>
+        <h1>OUR PROPERTY CATALOGUE</h1>
       </div>
       <CardComponent /> 
-      <About />
-      
     
     </div>
   );
