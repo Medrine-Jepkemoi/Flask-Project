@@ -2,7 +2,7 @@ import './App.css';
 import Navbar from './Navbar';
 import LandingText from './landingtext';
 import CardComponent from './cartegorycard';
-import Home from './showProperty'; 
+import Home from './Home'; 
 
 function App() {
   return (

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-import './HomeCard.css';
+import './HomeCard.css'; 
 
 const HomeCard = ({ home }) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -14,7 +14,7 @@ const HomeCard = ({ home }) => {
     e.preventDefault();
 
     try {
-      await axios.post('http://127.0.0.1:5000/api/reviews', { review, homeId: home.id });
+      await axios.post('/api/reviews', { review, homeId: home.property_id });
 
       setReview('');
       setShowReviewForm(false);
@@ -27,13 +27,13 @@ const HomeCard = ({ home }) => {
     <div className="home-card">
       <div className="home-card-inner">
         <div className="home-image">
-          {/* <img src={home.image} alt={home.name} />  */}
-           {/* <div className="sticker">{home.sale ? 'On Sale' : 'For Rent'}</div> */}
+          <img src={home.image} alt={home.title} />
+          <div className="sticker">{home.sale ? 'On Sale' : 'For Rent'}</div>
         </div>
         <div className="home-details">
-          {/* <h2>{home.name}</h2>
+          <h2>{home.title}</h2>
           <p>Price: {home.price}</p>
-          <p>{home.description}</p> */}
+          <p>{home.description}</p>
           <button onClick={handlePurchase}>Purchase</button>
         </div>
       </div>

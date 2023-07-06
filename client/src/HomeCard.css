@@ -4,6 +4,8 @@
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
+  display: flex;       /* Display the cards horizontally */
+  flex-wrap: wrap;     /* Wrap the cards to a new line if there's not enough space */
 }
 
 .home-image {
