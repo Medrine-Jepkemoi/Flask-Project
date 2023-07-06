@@ -2,6 +2,8 @@ import './App.css';
 import Navbar from './Navbar';
 import LandingText from './landingtext';
 import CardComponent from './cartegorycard';
+import About from './about';
+
 
 function App() {
   return (
@@ -12,6 +14,8 @@ function App() {
         <h1 >OUR PROPERTY CATALOGUE</h1>
       </div>
       <CardComponent /> 
+      <About />
+      
     
     </div>
   );
