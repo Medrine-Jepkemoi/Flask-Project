@@ -2,7 +2,7 @@ import './App.css';
 import Navbar from './Navbar';
 import LandingText from './landingtext';
 import CardComponent from './cartegorycard';
-import HomeCard from './showProperty'; 
+import Home from './showProperty'; 
 
 function App() {
   return (
@@ -13,7 +13,7 @@ function App() {
         <h1>OUR PROPERTY CATALOGUE</h1>
       </div>
       <CardComponent />
-      <HomeCard />
+      <Home/>
     </div>
   );
 }

@@ -1,24 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
+import './HomeCard.css'; 
 
 const HomeCard = ({ home }) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [review, setReview] = useState('');
-  const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get('/user/products');
-        const products = response.data;
-        setProducts(products);
-      } catch (error) {
-        console.log('Error fetching products:', error);
-      }
-    };
-
-    fetchProducts();
-  }, []);
 
   const handlePurchase = () => {
     setShowReviewForm(true);
@@ -28,8 +14,7 @@ const HomeCard = ({ home }) => {
     e.preventDefault();
 
     try {
-      // Replace API_URL with the actual API endpoint to submit the review
-      await axios.post("http://127.0.0.1:5000", { review, homeId: home.id });
+      await axios.post('/api/reviews', { review, homeId: home.id });
 
       setReview('');
       setShowReviewForm(false);

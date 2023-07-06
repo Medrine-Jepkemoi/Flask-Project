@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './HomeCard.css'; 
+import './HomeCard.css';
 
 const HomeCard = ({ home }) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -14,7 +14,7 @@ const HomeCard = ({ home }) => {
     e.preventDefault();
 
     try {
-      await axios.post('/api/reviews', { review, homeId: home.id });
+      await axios.post('http://127.0.0.1:5000/api/reviews', { review, homeId: home.id });
 
       setReview('');
       setShowReviewForm(false);
