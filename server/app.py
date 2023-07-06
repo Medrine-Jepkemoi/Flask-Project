@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
-# app.secret_key = b'\xf6\xdc\\\xd8P\x98\xe8\x0c\xbal\x8c\x8c\x7f7K\xc8'
+app.secret_key = b'\xf6\xdc\\\xd8P\x98\xe8\x0c\xbal\x8c\x8c\x7f7K\xc8'
 
 CORS(app)
 
@@ -24,66 +24,9 @@ def index():
     return "Index for Nyumba Mali"
 
 # User CRUD
-# API route to view all products
-@app.route('/user/products', methods=['GET'])
-def get_all_products():
-    products = Property.query.all()
-        
-    products_list = []
-        
-    for product in products:
-        category = PropertyCategory.query.get(product.category_id)
-        category_name = category.category_name if category else None
-            
-        product_data = {
-            'property_id': product.property_id,
-            'title': product.title,
-            'image': product.image,
-            'description': product.description,
-            'price': product.price,
-            'quantity': product.quantity,
-            'category_name': category_name, 
-        }
-        products_list.append(product_data)
-
-    response = make_response(jsonify(products_list), 200)   
-    return response
-    
-
-
-# API route to view products by category name
-@app.route('/user/products/<category_name>', methods=['GET'])
-def get_products_by_category(category_name):
-    
-    category = PropertyCategory.query.filter_by(category_name=category_name).first()
-
-    if category:
-        products = Property.query.filter_by(category_id=category.category_id).all()
-
-        products_list = []
-
-        for product in products:
-            product_data = {
-                'title': product.title,
-                'image': product.image,
-                'description': product.description,
-                'price': product.price,
-                'quantity': product.quantity,
-            }
-            products_list.append(product_data)
-
-        response = make_response(jsonify(products_list), 200)
-        return response
-    else:
-        response = make_response(jsonify({'error': f'Category {category_name} not found.'}), 404)
-        return response
-
-    
-
 # User signup route
 @app.route('/user/signup', methods=['GET', 'POST'])
 def signup():
-
     if request.method == 'GET':
         existing_accounts = []
 
@@ -94,11 +37,9 @@ def signup():
             existing_accounts.append(user_dict)
 
         response = make_response(jsonify(existing_accounts), 200)
-
         return response
-    
-    elif request.method == 'POST':
 
+    elif request.method == 'POST':
         email = request.form.get("email")
         password = request.form.get("password")
 
@@ -124,21 +65,10 @@ def signup():
             201
         )
 
-        return response
+    response.headers['Access-Control-Allow-Origin'] = '*'  # Allow cross-origin requests
+    session['user_id'] = new_acc.user_id  # Create a session and store the user ID
+    return response
 
-# Route to delete a user
-@app.route('/user/<int:user_id>', methods=['DELETE'])
-def delete_user(user_id):
-    user = User.query.get(user_id)
-
-    if not user:
-        response = make_response(jsonify({'error': 'User not found'}), 404)
-        return response
-
-    db.session.delete(user)
-    db.session.commit()
-
-    return jsonify({'message': 'User deleted successfully'})
 
 # User login route
 @app.route('/user/login', methods=['POST'])
@@ -162,26 +92,75 @@ def login():
 
     # User login successful
     response = make_response(jsonify({'message': 'Login successful.'}), 200)
+    session['user_id'] = user.user_id  # Create a session and store the user ID
     return response
 
+# API route to view all products
+@app.route('/user/products', methods=['GET'])
+def get_all_products():
+    products = Property.query.all()
+
+    products_list = []
+
+    for product in products:
+        category = PropertyCategory.query.get(product.category_id)
+        category_name = category.category_name if category else None
+
+        product_data = {
+            'property_id': product.property_id,
+            'title': product.title,
+            'image': product.image,
+            'description': product.description,
+            'price': product.price,
+            'quantity': product.quantity,
+            'category_name': category_name,
+        }
+        products_list.append(product_data)
+
+    response = make_response(jsonify(products_list), 200)
+    return response
+
+
+# API route to view products by category name
+@app.route('/user/productcs/<category_name>', methods=['GET'])
+def get_products_by_category(category_name):
+    category = PropertyCategory.query.filter_by(category_name=category_name).first()
+
+    if category:
+        products = Property.query.filter_by(category_id=category.category_id).all()
+
+        products_list = []
+
+        for product in products:
+            product_data = {
+                'title': product.title,
+                'image': product.image,
+                'description': product.description,
+                'price': product.price,
+                'quantity': product.quantity,
+            }
+            products_list.append(product_data)
+
+        response = make_response(jsonify(products_list), 200)
+        return response
+    else:
+        response = make_response(jsonify({'error': f'Category {category_name} not found.'}), 404)
+        return response
 
 # Route to purchase property
 @app.route('/property/purchase', methods=['POST'])
 def purchase_property():
-    # Get the user ID, property title, and quantity from the request
-    user_id = request.form.get('user_id')
+    user_id = session.get('user_id')  # Retrieve the user ID from the session
     title = request.form.get('title')
     quantity = int(request.form.get('quantity', 0))
 
     if not user_id or not title or not quantity:
         return jsonify({'error': 'User ID, property title, and quantity are required.'}), 400
 
-    # Retrieve the user from the database
     user = User.query.get(user_id)
     if not user:
         return jsonify({'error': 'User not found.'}), 404
 
-    # Retrieve the property from the database
     property = Property.query.filter_by(title=title).first()
     if not property:
         return jsonify({'error': 'Property not found.'}), 404
@@ -189,30 +168,33 @@ def purchase_property():
     if property.quantity < quantity:
         return jsonify({'error': 'Insufficient quantity.'}), 400
 
-    # Calculate the total cost
     total_cost = property.price * quantity
 
-    # Create a new bought property entry
     bought_property = BoughtProperty(property=property, user=user, bought_quantity=quantity, total_cost=total_cost)
     db.session.add(bought_property)
 
-    # Update the property quantity
     property.quantity -= quantity
 
-    # Commit the changes to the database
     db.session.commit()
 
     return jsonify({'message': 'Property purchased successfully.'}), 200
 
 
-# view cart
-@app.route('/user/cart/<int:user_id>', methods=['GET'])
-def view_cart(user_id):
+# View cart
+@app.route('/user/cart', methods=['GET'])
+def view_cart():
+    user_id = session.get('user_id')  # Retrieve the user ID from the session
+
+    if not user_id:
+        return jsonify({'error': 'User not logged in.'}), 401
+
     user = User.query.get(user_id)
     if not user:
         return jsonify({'error': 'User not found.'}), 404
+
     cart = BoughtProperty.query.filter_by(user_id=user_id).all()
     cart_items = []
+
     for item in cart:
         property_data = {
             'property_id': item.property.property_id,
@@ -224,77 +206,84 @@ def view_cart(user_id):
             'total_cost': item.total_cost,
         }
         cart_items.append(property_data)
+
     response = make_response(jsonify({'cart': cart_items}), 200)
     return response
-    # session_user_id = session.get('user_id')
-    # if session_user_id != user_id:
-    #     return jsonify({'error': 'User not logged in.'}), 401
 
 
 # Route to update the quantity of a bought property
 @app.route('/bought/quantity', methods=['PATCH'])
 def update_quantity():
-    # Get the user ID, property title, and new quantity from the request
-    user_id = int(request.form.get('user_id'))
+    user_id = session.get('user_id')  # Retrieve the user ID from the session
     property_title = request.form.get('property_title')
     new_quantity = int(request.form.get('new_quantity', 0))
 
     if not user_id or not property_title or not new_quantity:
         return jsonify({'error': 'User ID, property title, and new quantity are required.'}), 400
 
-    # Retrieve the user from the database
     user = User.query.get(user_id)
     if not user:
         return jsonify({'error': 'User not found.'}), 404
 
-    # Retrieve the property from the database
     property = Property.query.filter_by(title=property_title).first()
     if not property:
         return jsonify({'error': 'Property not found.'}), 404
 
-    # Retrieve the associated bought property for the user
     bought_property = BoughtProperty.query.filter_by(property_id=property.property_id, user_id=user.user_id).first()
     if not bought_property:
         return jsonify({'error': 'Bought property not found.'}), 404
 
-    # if property.is_sold:
-    #     return jsonify({'error': 'Property is already sold.'}), 400
-
     if new_quantity > property.quantity:
         return jsonify({'error': 'Insufficient quantity.'}), 400
 
-    # Calculate the total cost based on the new quantity
     total_cost = property.price * new_quantity
 
-    # Update the bought property's quantity and total cost
     bought_property.bought_quantity = new_quantity
     bought_property.total_cost = total_cost
 
-    # Update the property's quantity
     property.quantity += bought_property.bought_quantity - new_quantity
 
-    # Commit the changes to the database
     db.session.commit()
 
     return jsonify({'message': 'Quantity updated successfully.'}), 200
 
 
-# delete from cart_items
-@app.route('/user/cart/<int:user_id>/<string:property_title>', methods=['DELETE'])
-def delete_from_cart(user_id, property_title):
+# Route to delete a property from the cart
+@app.route('/user/cart/<int:property_id>', methods=['DELETE'])
+def delete_from_cart(property_id):
+    user_id = session.get('user_id')  # Retrieve the user ID from the session
+
+    if not user_id:
+        return jsonify({'error': 'User not logged in.'}), 401
+
     user = User.query.get(user_id)
     if not user:
         return jsonify({'error': 'User not found.'}), 404
-    bought_property = BoughtProperty.query.filter_by(user_id=user_id).join(Property).filter(Property.title == property_title).first()
+
+    bought_property = BoughtProperty.query.filter_by(property_id=property_id, user_id=user_id).first()
     if not bought_property:
         return jsonify({'error': 'Property not found in the cart.'}), 404
-    property = bought_property.property
+
+    property = Property.query.get(property_id)
     if not property:
         return jsonify({'error': 'Property not found.'}), 404
-    property.quantity += bought_property.bought_quantity  # Return the quantity back to the available properties
+
+    property.quantity += bought_property.bought_quantity
+
     db.session.delete(bought_property)
     db.session.commit()
-    return jsonify({'message': 'Item removed from the cart and returned to the available properties.'}), 200
+
+    return jsonify({'message': 'Property removed from the cart.'}), 200
+
+# User logout route
+@app.route('/user/logout', methods=['POST'])
+def user_logout():
+    # Clear the user session
+    session.clear()
+
+    response = make_response(jsonify({'message': 'Logout successful.'}), 200)
+    return response
+
 
 
 # ADMIN CRUD
