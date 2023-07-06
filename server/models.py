@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_serializer import SerializerMixin
 import datetime
+import bcrypt
 
 db = SQLAlchemy()
 
@@ -18,6 +19,13 @@ class User(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f'User(user_id={self.user_id}, email={self.email})'
+    
+    def set_password(self, password):
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        self.password = hashed_password.decode('utf-8')
+
+    def check_password(self, password):
+        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
 # Admin table
 class Admin(db.Model, SerializerMixin):
     __tablename__ = 'admins'
@@ -30,6 +38,13 @@ class Admin(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f'Admin(admin_id={self.admin_id}, email={self.email})'
+    
+    def set_password(self, password):
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        self.password = hashed_password.decode('utf-8')
+
+    def check_password(self, password):
+        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
 # Property Category table
 class PropertyCategory(db.Model):
     __tablename__ = 'property_categories'

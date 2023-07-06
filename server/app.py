@@ -23,6 +23,7 @@ db.init_app(app)
 def index():
     return "Index for Nyumba Mali"
 
+# User CRUD
 # API route to view all products
 @app.route('/user/products', methods=['GET'])
 def get_all_products():
@@ -111,6 +112,7 @@ def signup():
             return response
 
         new_acc = User(email=email, password=password)
+        new_acc.set_password(password)
 
         db.session.add(new_acc)
         db.session.commit()
@@ -124,6 +126,19 @@ def signup():
 
         return response
 
+# Route to delete a user
+@app.route('/user/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    user = User.query.get(user_id)
+
+    if not user:
+        response = make_response(jsonify({'error': 'User not found'}), 404)
+        return response
+
+    db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({'message': 'User deleted successfully'})
 
 # User login route
 @app.route('/user/login', methods=['POST'])
@@ -297,13 +312,24 @@ def admin_signup():
 
     # Create a new admin
     admin = Admin(email=email, password=password)
+    admin.set_password(password)
     db.session.add(admin)
     db.session.commit()
 
     response = make_response(jsonify({'message': 'Admin signup successful.'}), 201)
     return response
 
+@app.route('/admin/<int:admin_id>', methods=['DELETE'])
+def delete_admin(admin_id):
+    admin = Admin.query.get(admin_id)
 
+    if not admin:
+        return jsonify({'error': 'Admin not found'}), 404
+
+    db.session.delete(admin)
+    db.session.commit()
+
+    return jsonify({'message': 'Admin deleted successfully'})
 
 # Login route for admin
 @app.route('/admin/login', methods=['POST'])
