@@ -27,9 +27,9 @@ const HomeCard = ({ home }) => {
     <div className="home-card">
       <div className="home-card-inner">
         <div className="home-image">
-          {/* <img src={home.image} alt={home.name} /> */}
-          {/* <div className="sticker">{home.sale ? 'On Sale' : 'For Rent'}</div>
-        </div> */}
+          {/* <img src={home.image} alt={home.name} />  */}
+           {/* <div className="sticker">{home.sale ? 'On Sale' : 'For Rent'}</div> */}
+        </div>
         <div className="home-details">
           {/* <h2>{home.name}</h2>
           <p>Price: {home.price}</p>
