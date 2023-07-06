@@ -1,5 +1,5 @@
 from flask import Flask, request, make_response, jsonify, json
-from datetime import datetime
+from datetime import date
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
@@ -20,83 +20,63 @@ def index():
     return "Index for Nyumba Mali"
 
 # API route to view all products
-@app.route('/products', methods=['GET'])
+@app.route('/user/products', methods=['GET'])
 def get_all_products():
-    try:
-        # Retrieve all products from the database
-        products = Property.query.all()
+    products = Property.query.all()
         
-        # Create a list to store product details
-        products_list = []
+    products_list = []
         
-        # Iterate through each product and extract relevant information
-        for product in products:
-            # Get the category name based on the category_id
-            category = PropertyCategory.query.get(product.category_id)
-            category_name = category.category_name if category else None
+    for product in products:
+        category = PropertyCategory.query.get(product.category_id)
+        category_name = category.category_name if category else None
             
+        product_data = {
+            'property_id': product.property_id,
+            'title': product.title,
+            'image': product.image,
+            'description': product.description,
+            'price': product.price,
+            'quantity': product.quantity,
+            'category_name': category_name, 
+        }
+        products_list.append(product_data)
+
+    response = make_response(jsonify(products_list), 200)   
+    return response
+    
+
+
+# API route to view products by category name
+@app.route('/user/products/<category_name>', methods=['GET'])
+def get_products_by_category(category_name):
+    
+    category = PropertyCategory.query.filter_by(category_name=category_name).first()
+
+    if category:
+        products = Property.query.filter_by(category_id=category.category_id).all()
+
+        products_list = []
+
+        for product in products:
             product_data = {
-                'property_id': product.property_id,
                 'title': product.title,
                 'image': product.image,
                 'description': product.description,
                 'price': product.price,
                 'quantity': product.quantity,
-                'is_rental': product.is_rental,
-                'is_sold': product.is_sold,
-                'category_name': category_name,  # Include the category name
             }
             products_list.append(product_data)
-        
-        # Return the list of products as a JSON response
-        return jsonify(products_list), 200
-    
-    except Exception as e:
-        # Return an error message if any exception occurs
-        return jsonify({'error': str(e)}), 500
 
+        response = make_response(jsonify(products_list), 200)
+        return response
+    else:
+        response = make_response(jsonify({'error': f'Category {category_name} not found.'}), 404)
+        return response
 
-# API route to view products by category name
-@app.route('/products/<category_name>', methods=['GET'])
-def get_products_by_category(category_name):
-    try:
-        # Retrieve the category by name
-        category = PropertyCategory.query.filter_by(category_name=category_name).first()
-
-        if category:
-            # Retrieve products based on the category_id
-            products = Property.query.filter_by(category_id=category.category_id).all()
-
-            # Create a list to store product details
-            products_list = []
-
-            # Iterate through each product and extract relevant information
-            for product in products:
-                product_data = {
-                    'title': product.title,
-                    'image': product.image,
-                    'description': product.description,
-                    'price': product.price,
-                    'quantity': product.quantity,
-                    'is_rental': product.is_rental,
-                    'is_sold': product.is_sold,
-                    'category_name': category_name,
-                }
-                products_list.append(product_data)
-
-            # Return the list of products for the specified category as a JSON response
-            return jsonify(products_list), 200
-        else:
-            # Return an error message if the category does not exist
-            return jsonify({'error': f'Category "{category_name}" not found.'}), 404
-
-    except Exception as e:
-        # Return an error message if any exception occurs
-        return jsonify({'error': str(e)}), 500
     
 
 # User signup route
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route('/user/signup', methods=['GET', 'POST'])
 def signup():
 
     if request.method == 'GET':
@@ -142,7 +122,7 @@ def signup():
 
 
 # User login route
-@app.route('/login', methods=['POST'])
+@app.route('/user/login', methods=['POST'])
 def login():
     email = request.form.get("email")
     password = request.form.get("password")
@@ -166,83 +146,148 @@ def login():
     return response
 
 
-
-# Property purchase/rent route
+# Route to purchase property
 @app.route('/property/purchase', methods=['POST'])
 def purchase_property():
+    # Get the user ID, property title, and quantity from the request
     user_id = request.form.get('user_id')
     title = request.form.get('title')
-    quantity = request.form.get('quantity')
-    option = request.form.get('option')
+    quantity = int(request.form.get('quantity', 0))
 
-    if not user_id or not title or not quantity or not option:
-        response = make_response(jsonify({'error': 'User ID, Title, Quantity, and Option are required.'}), 400)
-        return response
+    if not user_id or not title or not quantity:
+        return jsonify({'error': 'User ID, property title, and quantity are required.'}), 400
 
+    # Retrieve the user from the database
     user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found.'}), 404
+
+    # Retrieve the property from the database
     property = Property.query.filter_by(title=title).first()
+    if not property:
+        return jsonify({'error': 'Property not found.'}), 404
 
-    if not user or not property:
-        response = make_response(jsonify({'error': 'Invalid User ID or Title.'}), 404)
-        return response
+    if property.quantity < quantity:
+        return jsonify({'error': 'Insufficient quantity.'}), 400
 
-    if property.is_sold:
-        response = make_response(jsonify({'error': 'Property is already sold.'}), 400)
-        return response
+    # Calculate the total cost
+    total_cost = property.price * quantity
 
-    if option == 'rent':
-        # Perform rental logic here
-        rental_price = property.price
+    # Create a new bought property entry
+    bought_property = BoughtProperty(property=property, user=user, bought_quantity=quantity, total_cost=total_cost)
+    db.session.add(bought_property)
 
-        # Create a new BoughtProperty entry for rental
-        bought_property = BoughtProperty(
-            property_id=property.property_id,
-            user_id=user_id,
-            bought_quantity=quantity,
-            rental_price=rental_price
-        )
+    # Update the property quantity
+    property.quantity -= quantity
 
-        db.session.add(bought_property)
-        db.session.commit()
+    # Commit the changes to the database
+    db.session.commit()
 
-        response = make_response(jsonify({'message': 'Property rented successfully.'}), 200)
-        return response
-
-    elif option == 'buy':
-        # Perform purchase logic here
-        if property.quantity < int(quantity):
-            response = make_response(jsonify({'error': 'Insufficient quantity available.'}), 400)
-            return response
-
-        total_price = property.price * int(quantity)
-
-        # Create a new BoughtProperty entry for purchase
-        bought_property = BoughtProperty(
-            property_id=property.property_id,
-            user_id=user_id,
-            bought_quantity=quantity,
-            total_price=total_price
-        )
-
-        property.quantity -= int(quantity)
-
-        if property.quantity == 0:
-            property.is_sold = True
-
-        db.session.add(bought_property)
-        db.session.commit()
-
-        response = make_response(jsonify({'message': 'Property purchased successfully.'}), 200)
-        return response
-
-    else:
-        response = make_response(jsonify({'error': 'Invalid option. Must be either "rent" or "buy".'}), 400)
-        return response
+    return jsonify({'message': 'Property purchased successfully.'}), 200
 
 
+# Route to update the quantity of a bought property
+@app.route('/bought/quantity', methods=['PATCH'])
+def update_quantity():
+    # Get the user ID, property title, and new quantity from the request
+    user_id = int(request.form.get('user_id'))
+    property_title = request.form.get('property_title')
+    new_quantity = int(request.form.get('new_quantity', 0))
 
+    if not user_id or not property_title or not new_quantity:
+        return jsonify({'error': 'User ID, property title, and new quantity are required.'}), 400
 
+    # Retrieve the user from the database
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found.'}), 404
 
+    # Retrieve the property from the database
+    property = Property.query.filter_by(title=property_title).first()
+    if not property:
+        return jsonify({'error': 'Property not found.'}), 404
+
+    # Retrieve the associated bought property for the user
+    bought_property = BoughtProperty.query.filter_by(property_id=property.property_id, user_id=user.user_id).first()
+    if not bought_property:
+        return jsonify({'error': 'Bought property not found.'}), 404
+
+    # if property.is_sold:
+    #     return jsonify({'error': 'Property is already sold.'}), 400
+
+    if new_quantity > property.quantity:
+        return jsonify({'error': 'Insufficient quantity.'}), 400
+
+    # Calculate the total cost based on the new quantity
+    total_cost = property.price * new_quantity
+
+    # Update the bought property's quantity and total cost
+    bought_property.bought_quantity = new_quantity
+    bought_property.total_cost = total_cost
+
+    # Update the property's quantity
+    property.quantity += bought_property.bought_quantity - new_quantity
+
+    # Commit the changes to the database
+    db.session.commit()
+
+    return jsonify({'message': 'Quantity updated successfully.'}), 200
+
+# Route to view all properties bought by the user on the current day
+@app.route('/bought/view/<int:user_id>', methods=['GET'])
+def view_bought_properties(user_id):
+    # # Get the user ID from the request
+    # user_id = int(request.form.get('user_id'))
+
+    if not user_id:
+        return jsonify({'error': 'User ID is required.'}), 400
+    
+    bought_today = []
+
+    # Retrieve all the bought properties for the user on the current day
+    bought_properties = BoughtProperty.query.filter(
+        BoughtProperty.user_id == user_id,
+        BoughtProperty.purchase_date == date.today()
+    ).all()
+
+    for bought_property in bought_properties:
+        bought_property_dict = bought_property.to_dict()
+        bought_today.append(bought_property_dict)
+
+    response = make_response(jsonify({'bought_properties': bought_today}), 200)
+    return response
+
+# Route to delete a bought property by product name on the current day
+@app.route('/bought/delete', methods=['DELETE'])
+def delete_bought_property():
+    # Get the user ID and product name from the request
+    user_id = int(request.form.get('user_id'))
+    product_name = request.form.get('product_name')
+
+    if not user_id or not product_name:
+        return jsonify({'error': 'User ID and product name are required.'}), 400
+
+    # Print the user ID and product name for debugging
+    print(f'User ID: {user_id}, Product Name: {product_name}')
+
+    # Retrieve the associated bought property for the user, product name, and current day
+    bought_property = BoughtProperty.query.join(Property).filter(
+        BoughtProperty.user_id == user_id,
+        Property.title == product_name,
+        BoughtProperty.purchase_date == datetime.today()
+    ).first()
+
+    # Print the generated query for debugging
+    print(f'Query: {str(db.session.query(bought_property))}')
+
+    if not bought_property:
+        return jsonify({'error': 'Bought property not found.'}), 404
+
+    # Delete the bought property
+    db.session.delete(bought_property)
+    db.session.commit()
+
+    return jsonify({'message': 'Bought property deleted successfully.'}), 200
 
 if __name__ == '__main__':
     app.run(port=5555)
