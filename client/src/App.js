@@ -4,15 +4,15 @@ import LandingText from './landingtext';
 import CardComponent from './cartegorycard';
 import About from './about';
 import Home from './Home'
-// import LoginForm from './loginform';
+import LoginForm from './loginform';
 // import SignUp from './SignUp';
 
 function App() {
   return (
     
     <div className="App">
-      {/* <SignUp />
-      <LoginForm /> */}
+      {/* <SignUp /> */}
+      <LoginForm />
       <Navbar />
       <LandingText />
       <div style={{ background: '#ccc', textAlign: 'center' }}>

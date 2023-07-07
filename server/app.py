@@ -84,9 +84,16 @@ def login():
 
     user = User.query.filter_by(email=email).first()
 
-    if not user or not user.check_password(password):
+    if not user:
         response = make_response(jsonify({'error': 'Invalid email or password.'}), 401)
         return response
+
+    if not user.check_password(password):
+        response = make_response(jsonify({'error': 'Invalid email or password.'}), 401)
+        return response
+    # if user.password != password:
+    #     response = make_response(jsonify({'error': 'Invalid email or password.'}), 401)
+    #     return response
 
     # User login successful
     response = make_response(jsonify({'message': 'Login successful.'}), 200)
@@ -148,7 +155,7 @@ def get_all_products():
 
 
 # API route to view products by category name
-@app.route('/user/productcs/<category_name>', methods=['GET'])
+@app.route('/user/products/<category_name>', methods=['GET'])
 def get_products_by_category(category_name):
     category = PropertyCategory.query.filter_by(category_name=category_name).first()
 
