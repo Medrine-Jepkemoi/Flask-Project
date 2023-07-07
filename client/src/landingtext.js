@@ -29,7 +29,7 @@ const LandingText = () => {
 
 export default LandingText;
 
-// import React from 'react';
+// import React, { useContext } from 'react';
 // import { Link } from 'react-router-dom';
 
 // const LandingText = () => {
@@ -47,17 +47,20 @@ export default LandingText;
 //   };
 
 //   return (
-//     <div style={headingStyle}>
-//       <div style={blueBackgroundStyle}>
-//         <h1>CHATEAU PROPERTIES</h1>
-//         <h1>AFFORDABLE & AMAZING PROPERTY</h1>
-//       </div>
-//       <div className="button-container">
-//         <Link className="center-button">CATALOGUE</Link>
-//       </div>
+//     <div>
+//       <h1 style={headingStyle}>
+//         <div style={blueBackgroundStyle}>
+//           <h1>CHATEAU PROPERTIES</h1>
+//           <h1>AFFORDABLE & AMAZING PROPERTY</h1>
+//         </div>
+//         <div className="button-container">
+//           <Link to="/catalogue" className="center-button">
+//             CATALOGUE
+//           </Link>
+//         </div>
+//       </h1>
 //     </div>
 //   );
 // };
 
 // export default LandingText;
-

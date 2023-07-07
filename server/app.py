@@ -71,12 +71,12 @@ def signup():
     session['user_id'] = new_acc.user_id  # Create a session and store the user ID
     return response
 
-
 # User login route
 @app.route('/user/login', methods=['POST'])
 def login():
-    email = request.form.get("email")
-    password = request.form.get("password")
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
 
     if not email or not password:
         response = make_response(jsonify({'error': 'Email and password are required.'}), 400)
@@ -84,11 +84,7 @@ def login():
 
     user = User.query.filter_by(email=email).first()
 
-    if not user:
-        response = make_response(jsonify({'error': 'Invalid email or password.'}), 401)
-        return response
-
-    if user.password != password:
+    if not user or not user.check_password(password):
         response = make_response(jsonify({'error': 'Invalid email or password.'}), 401)
         return response
 
@@ -96,6 +92,31 @@ def login():
     response = make_response(jsonify({'message': 'Login successful.'}), 200)
     session['user_id'] = user.user_id  # Create a session and store the user ID
     return response
+
+# User login route
+# @app.route('/user/login', methods=['POST'])
+# def login():
+#     email = request.form.get("email")
+#     password = request.form.get("password")
+
+#     if not email or not password:
+#         response = make_response(jsonify({'error': 'Email and password are required.'}), 400)
+#         return response
+
+#     user = User.query.filter_by(email=email).first()
+
+#     if not user:
+#         response = make_response(jsonify({'error': 'Invalid email or password.'}), 401)
+#         return response
+
+#     if user.password != password:
+#         response = make_response(jsonify({'error': 'Invalid email or password.'}), 401)
+#         return response
+
+#     # User login successful
+#     response = make_response(jsonify({'message': 'Login successful.'}), 200)
+#     session['user_id'] = user.user_id  # Create a session and store the user ID
+#     return response
 
 
 
