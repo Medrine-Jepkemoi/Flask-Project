@@ -88,7 +88,7 @@ def login():
         response = make_response(jsonify({'error': 'Invalid email or password.'}), 401)
         return response
 
-    if user.password != password:
+    if not user.check_password(password):
         response = make_response(jsonify({'error': 'Invalid email or password.'}), 401)
         return response
 
