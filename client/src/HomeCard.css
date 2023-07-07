@@ -1,10 +1,12 @@
 .home-card {
-  width: 300px;
+  height:auto;
+  width: 1400px;
+  height: 400px !important;
   margin: 10px;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  display: flex;       /* Display the cards horizontally */
+  display: inline-block;       /* Display the cards horizontally */
   flex-wrap: wrap;     /* Wrap the cards to a new line if there's not enough space */
 }
 

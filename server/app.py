@@ -18,6 +18,8 @@ migrate = Migrate(app, db)
 
 db.init_app(app)
 
+
+
 # Index route
 @app.route('/')
 def index():
@@ -94,6 +96,9 @@ def login():
     response = make_response(jsonify({'message': 'Login successful.'}), 200)
     session['user_id'] = user.user_id  # Create a session and store the user ID
     return response
+
+
+
 
 # API route to view all products
 @app.route('/user/products', methods=['GET'])
