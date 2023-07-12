@@ -1,4 +1,4 @@
-.home-card {
+/* .home-card {
   height:auto;
   width: 1400px;
   height: 400px !important;
@@ -6,8 +6,8 @@
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  display: inline-block;       /* Display the cards horizontally */
-  flex-wrap: wrap;     /* Wrap the cards to a new line if there's not enough space */
+  display: inline-block;       
+  flex-wrap: wrap;    
 }
 
 .home-image {
@@ -80,4 +80,74 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
+} */
+
+
+.home-card {
+  width: 300px;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  display: inline-block;
+  vertical-align: top;
 }
+.home-image {
+  position: relative;
+}
+.home-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 5px;
+}
+.sticker {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  background-color: #FF9800;
+  color: #fff;
+  font-size: 12px;
+  border-radius: 5px;
+}
+.home-details {
+  margin-top: 10px;
+}
+.home-details h2 {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+.home-details p {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.home-details button {
+  display: block;
+  width: 100%;
+  padding: 5px 10px;
+  background-color: #2196F3;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
